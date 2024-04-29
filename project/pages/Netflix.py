@@ -45,14 +45,14 @@ def loadWidgets() -> None:
     gb = GridOptionsBuilder.from_dataframe(df_filtered)
 
     ## We create the sidebar menu
-    ##user_input = st.sidebar.text_input('Enter your name', 'Your Name')
-    ##selected_option = st.sidebar.selectbox('Select an option', ['Option 1', 'Option 2', 'Option 3'])
+    user_input = st.sidebar.text_input('Enter your name', 'Your Name')
+    selected_option = st.sidebar.selectbox('Select an option', ['Option 1', 'Option 2', 'Option 3'])
 
     ## We create our dynamic table
     gb = GridOptionsBuilder
 
 def main() -> None:
-    st.title("Netflix Series Recommender")
+    st.title("Netflix Series Analyzer")
     ## We call the function in charge of cleaning the dataset
     cleanDataset(data)
     ## We display our widgets

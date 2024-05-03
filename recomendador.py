@@ -3,9 +3,7 @@ import pandas as pd
 import pickle
 import requests
 
-movies = pickle.load(open('./saved/df_netflix.pkl', 'rb'))
-sim = pickle.load(open('./saved/sim_netflix.pkl', 'rb'))
-movies_list = movies['title'].values
+dataframes_options = ['-','Amazon', 'Disney', 'Hulu', 'Netflix']
 PLACEHOLDER = "https://placekitten.com/200/300"
 
 def fetch_img(movie):
@@ -29,7 +27,15 @@ def recommend(name):
     return recommended_movies, posters
 
 st.header('Recomendador de series y películas')
-selected_movie = st.selectbox('Selecciona una serie o película', movies_list)
+
+selected_platform = st.selectbox("Selecciona una opción de plataforma", dataframes_options)
+
+if selected_platform != dataframes_options[0]:
+    movies = pickle.load(open(f'./saved/df_{selected_platform.lower()}.pkl', 'rb'))
+    sim = pickle.load(open(f'./saved/sim_{selected_platform.lower()}.pkl', 'rb'))
+    movies_list = movies['title'].values
+    selected_movie = st.selectbox('Selecciona una serie o película', movies_list)
+    
 
 if st.button('Recomendar'):
     nombres, posters = recommend(selected_movie)

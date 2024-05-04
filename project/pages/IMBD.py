@@ -2,26 +2,54 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import streamlit as st
-from st_aggrid import AgGrid
-from st_aggrid.grid_options_builder import GridOptionsBuilder
-from streamlit_dynamic_filters import DynamicFilters
+import json
+from pandas import json_normalize
 
-data = pd.read_csv(r'../data/netflix_titles.csv')
+### Funciones que necesitaremos
 
+def aplanar_json(dataset, columna, llave):
+    ## Verificamos si es un tipo de datos str para convertirlo a un tipo de dato de python
+    dataset[columna] = dataset[columna].apply(lambda x: json.loads(x) if isinstance(x,str) else x)
 
+    ### Extraemos que necesitamos
+    dataset[columna] = dataset[columna].apply(lambda x: [y[llave] for y in x] if x else [])
 
+def createCleanDataset():
+    # Combinamos nuestros 2 cvs
+    df_credits = pd.read_csv(r'../data/tmdb_5000_credits.csv')
+    df_movies = pd.read_csv(r'../data/tmdb_5000_movies.csv')
 
-def cleanDataset(dataset) -> None:
-    ## We drop the unnamed columns
-    dataset.drop(columns=dataset.columns[12:], inplace=True)
-    ## Set our index
-    dataset.set_index('show_id', inplace=True)
-    ## Change to datetime type our date
-    dataset['date_added'] = pd.to_datetime(dataset['date_added'], format='mixed')
-    ## We change the nan values
-    dataset.fillna('Not avaible', inplace=True)
-    ## We cahnge the release_year to string
-    dataset['release_year'] = dataset['release_year'].astype('string')
+    # Hacemos las preparaciones para el merge
+    df_movies.rename(columns={'id':'movie_id'}, inplace=True)
+    df_credits.drop(columns='title', inplace=True)
+
+    # Juntamos los 2 dataframes
+    dataset = pd.merge(df_movies, df_credits, on='movie_id', how='inner')
+
+    dataset.set_index('movie_id', inplace=True)
+    dataset = dataset.sort_index()
+
+    #borrar NaN de release_date
+    dataset = dataset.dropna(subset=['release_date'])
+
+    #borrar NaN de runtime
+    dataset = dataset.dropna(subset=['runtime'])
+
+    # Reemplazar NaN por 'No disponble"
+    columnas_noDisponibles = {'homepage': 'No disponible', 'tagline': 'No disponible', 'overview': 'No disponible'}
+    dataset = dataset.fillna(columnas_noDisponibles)
+
+    # Aplanamos
+    aplanar_json(dataset, 'genres', 'name')
+    aplanar_json(dataset, 'keywords', 'name')
+    aplanar_json(dataset, 'production_companies', 'name')
+    aplanar_json(dataset, 'production_countries', 'name')
+    aplanar_json(dataset, 'spoken_languages', 'name')
+    aplanar_json(dataset, 'cast', 'character')
+    aplanar_json(dataset, 'crew', 'name')
+
+    # Renderizamos
+    st.write(dataset)
 
 def loadWidgets() -> None:
     ## Description button
@@ -54,14 +82,6 @@ def loadWidgets() -> None:
     ## We create our dynamic table
     gb = GridOptionsBuilder
 
-def main() -> None:
-    st.title("Netflix Series Analyzer")
-    ## We call the function in charge of cleaning the dataset
-    cleanDataset(data)
-    ## We display our widgets
-    loadWidgets()
-    ## We display our dataset in the app
-    st.write(data)
-
 if __name__ == "__main__":
-    main()
+    createCleanDataset()
+

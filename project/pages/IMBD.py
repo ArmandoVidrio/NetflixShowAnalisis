@@ -1,9 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 import streamlit as st
 import json
-from pandas import json_normalize
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MultiLabelBinarizer
 
 ### Funciones que necesitaremos
 
@@ -49,39 +49,26 @@ def createCleanDataset():
     aplanar_json(dataset, 'crew', 'name')
 
     # Renderizamos
-    st.write(dataset)
+    st.dataframe(dataset)
 
-def loadWidgets() -> None:
-    ## Description button
-    with st.expander("What's this app about?"):
+    return dataset
 
-        """
-        This app has the objective to give custom Netflix series and/or movies recomendations 
-        based on parameters given by the user.
-        """
-    
-    ## We calculate and show how many differents movies are in the dataset
-    different_movies = data.loc[data['type'] == 'Movie', 'title'].unique()
-    number_different_movies = len(different_movies)
-    st.metric(label="Number of movies",value=number_different_movies)
+def obtener_indices_peliculas_similares(dataset, movie_index, top_n=5):
+    # Convertir listas en vectores binarios usando MultiLabelBinarizer
+    mlb = MultiLabelBinarizer()
+    features = mlb.fit_transform(dataset['genres'] + dataset['keywords'])
 
-    ## We calculate and show how many differents tv shows are in the dataset
-    different_tv_shows = data.loc[data['type'] == 'TV Show', 'title'].unique()
-    number_different_tv_shows = len(different_tv_shows)
-    st.metric(label="Number of series", value=number_different_tv_shows)
+    # Calcular la similitud de coseno entre películas basándote en sus características numéricas
+    similarity_matrix = cosine_similarity(features)
+    movie_similarities = list(enumerate(similarity_matrix[movie_index]))
+    movie_similarities_sorted = sorted(movie_similarities, key=lambda x: x[1], reverse=True)
+    similar_movies_indices = [movie[0] for movie in movie_similarities_sorted[1:top_n+1]]
 
-    ## Select columns to be shown 
-    df_filtered = data[['type', 'country','rating']]
-
-    gb = GridOptionsBuilder.from_dataframe(df_filtered)
-
-    ## We create the sidebar menu
-    user_input = st.sidebar.text_input('Enter your name', 'Your Name')
-    selected_option = st.sidebar.selectbox('Select an option', ['Option 1', 'Option 2', 'Option 3'])
-
-    ## We create our dynamic table
-    gb = GridOptionsBuilder
+    return similar_movies_indices
 
 if __name__ == "__main__":
-    createCleanDataset()
+    movies_data = createCleanDataset()
+    indicesSimilares = obtener_indices_peliculas_similares(movies_data, 0)
+    peliculasSimilares = movies_data.iloc[indicesSimilares]
+    st.write(peliculasSimilares)
 

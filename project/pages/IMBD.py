@@ -4,9 +4,20 @@ import streamlit as st
 import json
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
+import requests
 
 ### Funciones que necesitaremos
+PLACEHOLDER = "https://placekitten.com/200/300"
 
+def fetch_img(movie):
+    url = f'http://www.omdbapi.com/?apikey=1a9586fd&t={movie}'
+    response = requests.get(url)
+    data = response.json()
+    if 'Poster' in data:
+        return data['Poster']
+    else:
+        return PLACEHOLDER
+    
 def aplanar_json(dataset, columna, llave):
     ## Verificamos si es un tipo de datos str para convertirlo a un tipo de dato de python
     dataset[columna] = dataset[columna].apply(lambda x: json.loads(x) if isinstance(x,str) else x)
@@ -28,6 +39,8 @@ def createCleanDataset():
 
     dataset.set_index('movie_id', inplace=True)
     dataset = dataset.sort_index()
+    dataset.reset_index(drop=True, inplace=True)
+    dataset = dataset.sort_index() 
 
     #borrar NaN de release_date
     dataset = dataset.dropna(subset=['release_date'])
@@ -48,12 +61,10 @@ def createCleanDataset():
     aplanar_json(dataset, 'cast', 'character')
     aplanar_json(dataset, 'crew', 'name')
 
-    # Renderizamos
-    st.dataframe(dataset)
-
     return dataset
 
-def obtener_indices_peliculas_similares(dataset, movie_index, top_n=5):
+def obtener_peliculas_similares(dataset, movie, top_n=5):
+    movie_index = dataset.index[dataset['title']==movie].tolist()[0]
     # Convertir listas en vectores binarios usando MultiLabelBinarizer
     mlb = MultiLabelBinarizer()
     features = mlb.fit_transform(dataset['genres'] + dataset['keywords'])
@@ -64,11 +75,48 @@ def obtener_indices_peliculas_similares(dataset, movie_index, top_n=5):
     movie_similarities_sorted = sorted(movie_similarities, key=lambda x: x[1], reverse=True)
     similar_movies_indices = [movie[0] for movie in movie_similarities_sorted[1:top_n+1]]
 
-    return similar_movies_indices
+    _peliculasRecomendadas = dataset.iloc[similar_movies_indices]
+
+    return _peliculasRecomendadas
 
 if __name__ == "__main__":
+    ## Creamos nuestro dataframe
     movies_data = createCleanDataset()
-    indicesSimilares = obtener_indices_peliculas_similares(movies_data, 0)
-    peliculasSimilares = movies_data.iloc[indicesSimilares]
-    st.write(peliculasSimilares)
+
+    ## Creamos la aplicacion de streamlit
+    st.header('Recomendador de peliculas IMBD')
+    ## peliculas disponibles
+    peliculas_disponibles = set(movies_data['title'])
+    pelicula_base = st.selectbox("Seleccionar pelicula para hacer las recomendaciones", peliculas_disponibles)
+
+    if st.button('Buscar'):
+        ## Obtenemos las recomendaciones, sus nombres, sus imagenes y el link a la pagina
+        peliculasRecomendadas = obtener_peliculas_similares(movies_data, pelicula_base)
+        nombresPeliculas = peliculasRecomendadas['title'].tolist()
+        imagesPeliculas = [fetch_img(pelicula) for pelicula in nombresPeliculas]
+        linkPaginaIMDB = peliculasRecomendadas['homepage'].tolist()
+
+        ## Imprimimos las recomendaciones en la aplicacion
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.write(nombresPeliculas[0])
+            st.image(imagesPeliculas[0])
+            st.write(f'Mas información: {linkPaginaIMDB[0]}')
+        with col2:
+            st.write(nombresPeliculas[1])
+            st.image(imagesPeliculas[1])
+            st.write(f'Mas información: {linkPaginaIMDB[1]}')
+        with col3:
+            st.write(nombresPeliculas[2])
+            st.image(imagesPeliculas[2])
+            st.write(f'Mas información: {linkPaginaIMDB[2]}')
+        with col4:
+            st.write(nombresPeliculas[3])
+            st.image(imagesPeliculas[3])
+            st.write(f'Mas información: {linkPaginaIMDB[3]}')
+        with col5:
+            st.write(nombresPeliculas[4])
+            st.image(imagesPeliculas[4])
+            st.write(f'Mas información: {linkPaginaIMDB[4]}')
+    st.header("Curiosidades sobre las peliculas")
 

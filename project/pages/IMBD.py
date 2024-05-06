@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
 import requests
 
+
 ### Funciones que necesitaremos
 PLACEHOLDER = "https://placekitten.com/200/300"
 
@@ -26,6 +27,7 @@ def aplanar_json(dataset, columna, llave):
 
     ### Extraemos que necesitamos
     dataset[columna] = dataset[columna].apply(lambda x: [y[llave] for y in x] if x else [])
+
 
 def createCleanDataset():
     # Combinamos nuestros 2 cvs
@@ -48,7 +50,7 @@ def createCleanDataset():
     dataset['release_date'] = pd.to_datetime(dataset['release_date'])
 
     #cambiar genres lrg
-    #dataset['production_companies'] = dataset['production_companies'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
+    dataset['production_companies'] = dataset['production_companies'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
 
     #borrar NaN de release_date
     dataset = dataset.dropna(subset=['release_date'])
@@ -94,7 +96,7 @@ def obtener_peliculas_similares(dataset, movie, top_n=5):
 
     return _peliculasRecomendadas
 
-# GENRE BY TITLE
+""" # GENRE BY TITLE
 
 def extract_genres(data, movie_title):
     #data['genres'] = data['genres'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
@@ -139,11 +141,11 @@ def top_genre_votes(data, genre_name):
     plt.title(f'Top 5 {genre_name} Movies by Average Vote')
     plt.legend(title="Movie Titles", loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside of the plot
     plt.grid(True)
-    st.pyplot(plt)
+    st.pyplot(plt) """
 
     # YEAR BY TITLE
 
-    # Filter movies by year
+     # Filter movies by year
 def filter_movies_by_year(data, year):
     return data[data['release_date'].dt.year == year]
 
@@ -151,6 +153,12 @@ def filter_movies_by_year(data, year):
 def get_top_movies_by_vote(data, year):
     year_movies = filter_movies_by_year(data, year)
     top_movies = year_movies.sort_values(by='vote_average', ascending=False).head(5)
+    return top_movies
+
+# Get top 5 movies by popularity
+def get_top_movies_by_popularity(data, year):
+    year_movies = filter_movies_by_year(data, year)
+    top_movies = year_movies.sort_values(by='popularity', ascending=False).head(5)
     return top_movies
 
     # Function to extract the release year of a movie by its title
@@ -165,7 +173,25 @@ def extract_release_year(data, movie_title):
         return release_year
     else:
         return "Movie not found"
+    
+# Plot top movies in a vertical bar chart
+def top_year_popularity(data, year):
+    top_movies = get_top_movies_by_popularity(data, year)
+    plt.figure(figsize=(10, 8))  # Adjusted for better display of vertical bars
+    plt.bar(top_movies['original_title'], top_movies['popularity'], color='teal')
+    plt.ylabel('Popularity')
+    plt.xlabel('Movie Title')
+    plt.title(f'Top 5 Movies of {year} by Popularity')
+    plt.xticks(rotation=45)  # Rotate movie titles for better readability
 
+    # Adjust the y-axis scale dynamically based on the range of popularity values
+    popularity_min = top_movies['popularity'].min() - 1  # slightly lower to add breathing room
+    popularity_max = top_movies['popularity'].max() + 1  # slightly higher to add breathing room
+    plt.yticks(ticks=np.arange(int(popularity_min), int(popularity_max) + 10, 10))  # adjust ticks on y-axis for clarity
+
+    st.pyplot(plt)
+
+ 
 def top_by_year(data, year):
     top_movies = get_top_movies_by_vote(data, year)
     plt.figure(figsize=(15, 8))  # Adjusted for better display of horizontal bars
@@ -175,13 +201,13 @@ def top_by_year(data, year):
     plt.title(f'Top 5 Movies of {year} by Average Vote')
 
     # Setting y-axis scale to have a tick every 0.25 points
-    vote_min = top_movies['vote_average'].min() - 0.25  # slightly lower to add breathing room
-    vote_max = top_movies['vote_average'].max() + 0.25  # slightly higher to add breathing room
-    plt.xticks(ticks=np.arange(int(vote_min), int(vote_max) + 0.25, 0.25))  # adjust ticks on x-axis for clarity
+    vote_min = top_movies['vote_average'].min() - 0.50  # slightly lower to add breathing room
+    vote_max = top_movies['vote_average'].max() + 0.50  # slightly higher to add breathing room
+    plt.xticks(ticks=np.arange(int(vote_min), int(vote_max) + 0.50, 0.50))  # adjust ticks on x-axis for clarity
 
     st.pyplot(plt)
 
-    # PRODUCTION COMPANY BY TITLE
+"""     # PRODUCTION COMPANY BY TITLE
     
 def extract_production_company(data, movie_title):
      # Find the movie row based on its title
@@ -203,8 +229,13 @@ def extract_production_company(data, movie_title):
 # Filter movies by production company
 
 def filter_movies_by_company(data, company_name):
-    data['production_companies'] = data['production_companies'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
-    return data[data['production_companies'].apply(lambda companies: any(company['name'] == company_name for company in companies))] # lrg
+    def valid_company(companies):
+        if isinstance(companies, list):
+            return any(isinstance(company, dict) and company.get('name') == company_name for company in companies)
+        return False
+
+    return data[data['production_companies'].apply(valid_company)]
+
 
 # Get top 5 movies by vote average
 def get_top_movies_by_company(data, company_name):
@@ -227,10 +258,37 @@ def top_by_company(data, company_name):
     plt.title(f'Top 5 Movies by {company_name} by Average Vote')
     plt.legend(title="Movie Titles", loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside of the plot
     plt.grid(True)
+    st.pyplot(plt) """
+
+
+def extract_movie_language(df, title):
+        # Buscar la película por título
+    movie_row = df[df['original_title'] == title]
+    
+    # Extraer el lenguaje
+    if not movie_row.empty:
+        return movie_row['original_language'].iloc[0]
+    else:
+        return "Película no encontrada"
+    
+def top_5_movies_by_language(data, language):
+    # Filtrar las películas por idioma
+    filtered_data = data[data['original_language'] == language]
+    
+    # Ordenar por popularidad de mayor a menor
+    sorted_data = filtered_data.sort_values(by='popularity', ascending=False)
+    
+    # Seleccionar las top 5
+    top_5_movies = sorted_data.head(5)
+    
+    # Crear la gráfica de barras
+    plt.figure(figsize=(10, 6))
+    plt.bar(top_5_movies['original_title'], top_5_movies['popularity'], color='green')
+    plt.xlabel('Movie Title')
+    plt.ylabel('Popularity')
+    plt.title(f'Top 5 Most Popular Movies in {language} Language')
+    plt.xticks(rotation=45)
     st.pyplot(plt)
-
-
-
 
 if __name__ == "__main__":
     ## Creamos nuestro dataframe
@@ -275,21 +333,21 @@ if __name__ == "__main__":
     # lrg genre = extract_genres(movies_data, pelicula_base)
 
     release_year = extract_release_year(movies_data, pelicula_base)
-    prod_company = extract_production_company(movies_data, pelicula_base)
+    language = extract_movie_language(movies_data, pelicula_base)
 
-    st.header("Top 5 Peliculas de <> con Mayor Popularidad")
+    st.header("Curiosidades Relacionadas a tu Pelicula")
 
-    st.header("Top 5 Peliculas del año {release_year} con Mayor Promedio de Votos ")
+    top_year_popularity(movies_data, release_year)
+
     top_by_year(movies_data, release_year)
 
-    st.header("Top 5 Peliculas con Mayor Promedio de Votos Producida por <> ")
-    print(prod_company)
-    for cp in prod_company:
-        top_by_company(movies_data, cp)
+    top_5_movies_by_language(movies_data, language)
+    # top 5 peliculas del mismo genero por vote_avergae
+    #  top 5 peliculas del mismo genero por popularidad
+    #  top 5 peliculas del misma productora por vote_avergre
 
-""" lrg    for g in genre:
-        st.header("Top 5 Peliculas d {g} con Mayor Promedio de Votos ")
-        top_genre_votes(movies_data, g) """
+
+
 
 
 

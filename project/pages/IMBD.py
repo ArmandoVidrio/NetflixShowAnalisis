@@ -117,7 +117,7 @@ def get_top_movies_by_popularity(data, year):
     # Function to extract the release year of a movie by its title
 def extract_release_year(data, movie_title):
     # Filter the DataFrame for the given movie title
-    movie_row = data[data['original_title'] == movie_title]
+    movie_row = data[data['title'] == movie_title]
 
     # Check if the movie was found
     if not movie_row.empty:
@@ -262,7 +262,8 @@ if __name__ == "__main__":
 
     release_year = extract_release_year(movies_data, pelicula_base)
     language = extract_movie_language(movies_data, pelicula_base)
-
+    st.write(f"pelicula: {pelicula_base}")
+    st.write(f"year: {release_year}")
     st.header("Curiosidades Relacionadas a tu Pelicula")
 
     top_year_popularity(movies_data, release_year)

@@ -1,3 +1,7 @@
 venv/*
+venv/
+tempCodeRunnerFile.ipynb
+tempCodeRunnerFile.py
+saved/*
 venv-lap/*
 saved/*

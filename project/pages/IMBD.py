@@ -96,53 +96,6 @@ def obtener_peliculas_similares(dataset, movie, top_n=5):
 
     return _peliculasRecomendadas
 
-""" # GENRE BY TITLE
-
-def extract_genres(data, movie_title):
-    #data['genres'] = data['genres'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
-    # Ensure the 'genres' column is a list of dictionaries if it is stored as a string
-    if isinstance(data['genres'].iloc[0], str):
-        data['genres'] = data['genres'].apply(lambda x: json.loads(x))
-    
-    # Filter the DataFrame for the given movie title
-    movie_row = data[data['original_title'] == movie_title]
-    
-    # Check if any movie was found
-    if not movie_row.empty:
-        # Extract genre list from the first (and should be only) row
-        genres_list = movie_row.iloc[0]['genres']
-        # Collect all genre names into a list
-        
-        genre_names = [genre['name'] for genre in genres_list]
-        return genre_names
-    else:
-        return "Movie not found"
-    
-# Define functions to filter and retrieve top movies by genre
-def filter_by_genre(data, genre_name):
-    return data[data['genres'].apply(lambda g: any(genre['name'] == genre_name for genre in g))]
-
-def get_top_movies_by_rating(data, genre_name):
-    genre_movies = filter_by_genre(data, genre_name)
-    top_movies = genre_movies.sort_values(by='vote_average', ascending=False).head(5)
-    return top_movies
-
-def top_genre_votes(data, genre_name):
-    top_movies = get_top_movies_by_rating(data, genre_name)
-    plt.figure(figsize=(15, 6))  # Wider plot for better layout
-    colors = list(mcolors.TABLEAU_COLORS)  # Get a set of color names
-
-    # Create a scatter plot
-    for i, (index, row) in enumerate(top_movies.iterrows()):
-        plt.scatter(row['vote_count'], row['vote_average'], color=colors[i % len(colors)], s=100, label=row['original_title'])
-
-    plt.xlabel('Vote Count')
-    plt.ylabel('Average Vote')
-    plt.title(f'Top 5 {genre_name} Movies by Average Vote')
-    plt.legend(title="Movie Titles", loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside of the plot
-    plt.grid(True)
-    st.pyplot(plt) """
-
     # YEAR BY TITLE
 
      # Filter movies by year
@@ -179,9 +132,9 @@ def top_year_popularity(data, year):
     top_movies = get_top_movies_by_popularity(data, year)
     plt.figure(figsize=(10, 8))  # Adjusted for better display of vertical bars
     plt.bar(top_movies['original_title'], top_movies['popularity'], color='teal')
-    plt.ylabel('Popularity')
-    plt.xlabel('Movie Title')
-    plt.title(f'Top 5 Movies of {year} by Popularity')
+    plt.ylabel('Popularidad')
+    #plt.xlabel('Movie Title')
+    plt.title(f'Top 5 Movies del año {year} por Popularidad')
     plt.xticks(rotation=45)  # Rotate movie titles for better readability
 
     # Adjust the y-axis scale dynamically based on the range of popularity values
@@ -194,71 +147,18 @@ def top_year_popularity(data, year):
  
 def top_by_year(data, year):
     top_movies = get_top_movies_by_vote(data, year)
-    plt.figure(figsize=(15, 8))  # Adjusted for better display of horizontal bars
+    plt.figure(figsize=(10, 6))  # Adjusted for better display of horizontal bars
     plt.barh(top_movies['original_title'], top_movies['vote_average'], color='skyblue')
-    plt.ylabel('Movie Title')
-    plt.xlabel('Average Vote')
-    plt.title(f'Top 5 Movies of {year} by Average Vote')
+    #plt.ylabel('Movie Title')
+    plt.xlabel('Promedio de Votos')
+    plt.title(f'Top 5 Movies del año {year} por Promedio de Votos')
 
-    # Setting y-axis scale to have a tick every 0.25 points
+    # Setting y-axis scale to have a tick every 0.5 points
     vote_min = top_movies['vote_average'].min() - 0.50  # slightly lower to add breathing room
     vote_max = top_movies['vote_average'].max() + 0.50  # slightly higher to add breathing room
-    plt.xticks(ticks=np.arange(int(vote_min), int(vote_max) + 0.50, 0.50))  # adjust ticks on x-axis for clarity
+    plt.xticks(ticks=np.arange(int(vote_min), int(vote_max) + 1, 0.50))  # adjust ticks on x-axis for clarity
 
     st.pyplot(plt)
-
-"""     # PRODUCTION COMPANY BY TITLE
-    
-def extract_production_company(data, movie_title):
-     # Find the movie row based on its title
-    movie_row = data[data['original_title'] == movie_title]
-    
-    # Check if any movie was found
-    if movie_row.empty:
-        return "Movie not found"
-    
-    # Extract the production company list from the first (should be only) row
-    production_companies_list = movie_row.iloc[0]['production_companies']
-    
-    # Debug print to check what the actual data looks like
-    #print("Debug - Production Companies Data:", production_companies_list)
-
-    return production_companies_list
-    
-    
-# Filter movies by production company
-
-def filter_movies_by_company(data, company_name):
-    def valid_company(companies):
-        if isinstance(companies, list):
-            return any(isinstance(company, dict) and company.get('name') == company_name for company in companies)
-        return False
-
-    return data[data['production_companies'].apply(valid_company)]
-
-
-# Get top 5 movies by vote average
-def get_top_movies_by_company(data, company_name):
-    company_movies = filter_movies_by_company(data, company_name)
-    top_movies = company_movies.sort_values(by='vote_average', ascending=False).head(5)
-    return top_movies[['original_title', 'vote_average', 'vote_count']]  # Including vote_count for the scatter plot
-
-
-def top_by_company(data, company_name):
-    top_movies = get_top_movies_by_company(data, company_name)
-    plt.figure(figsize=(15, 6))  # Wider plot
-    colors = list(mcolors.TABLEAU_COLORS)  # Get a set of color names from Matplotlib's tableau color set
-
-    # Create a scatter plot
-    for i, (index, row) in enumerate(top_movies.iterrows()):
-        plt.scatter(row['vote_count'], row['vote_average'], color=colors[i % len(colors)], s=100, label=row['original_title'])
-
-    plt.xlabel('Vote Count')
-    plt.ylabel('Average Vote')
-    plt.title(f'Top 5 Movies by {company_name} by Average Vote')
-    plt.legend(title="Movie Titles", loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside of the plot
-    plt.grid(True)
-    st.pyplot(plt) """
 
 
 def extract_movie_language(df, title):
@@ -284,10 +184,38 @@ def top_5_movies_by_language(data, language):
     # Crear la gráfica de barras
     plt.figure(figsize=(10, 6))
     plt.bar(top_5_movies['original_title'], top_5_movies['popularity'], color='green')
-    plt.xlabel('Movie Title')
-    plt.ylabel('Popularity')
-    plt.title(f'Top 5 Most Popular Movies in {language} Language')
+    #plt.xlabel('Movie Title')
+    plt.ylabel('Popularidad')
+    plt.title(f'Top 5 Peliculas con Mayor Popularidad en el Idioma {language}')
     plt.xticks(rotation=45)
+    st.pyplot(plt)
+
+# Función para graficar las top 5 películas de un idioma según su average rate
+def top_5_movies_by_language_and_rate(data, language):
+    # Filtrar las películas por el idioma dado
+    filtered_data = data[data['original_language'] == language]
+    
+    # Ordenar por vote_average de mayor a menor
+    sorted_data = filtered_data.sort_values(by='vote_average', ascending=False)
+    
+    # Seleccionar las top 5 películas
+    top_movies = sorted_data.head(5)
+    
+    # Crear la gráfica de barras horizontales
+    plt.figure(figsize=(10, 6))
+    plt.barh(top_movies['original_title'], top_movies['vote_average'], color='lightgreen')
+
+    # Setting y-axis scale to have a tick every 0.5 points
+    vote_min = top_movies['vote_average'].min() - 0.50  # slightly lower to add breathing room
+    vote_max = top_movies['vote_average'].max() + 0.50  # slightly higher to add breathing room
+    plt.xticks(ticks=np.arange(int(vote_min), int(vote_max) + 1, 0.50))  # adjust ticks on x-axis for clarity
+    
+    # Ajustar los ticks en el eje x para asegurar que la diferencia sea de .5
+    #plt.xticks(ticks=np.arange(0, top_5_movies['vote_average'].max() + 1, 0.5))
+    
+    plt.xlabel('Average Rate')
+    plt.title(f'Top 5 Movies in {language} Language by Average Rate')
+    plt.gca().invert_yaxis()  # Invertir el eje y para que la película con mayor tasa esté arriba
     st.pyplot(plt)
 
 if __name__ == "__main__":
@@ -342,9 +270,9 @@ if __name__ == "__main__":
     top_by_year(movies_data, release_year)
 
     top_5_movies_by_language(movies_data, language)
-    # top 5 peliculas del mismo genero por vote_avergae
-    #  top 5 peliculas del mismo genero por popularidad
-    #  top 5 peliculas del misma productora por vote_avergre
+
+    top_5_movies_by_language_and_rate(movies_data, language)
+
 
 
 

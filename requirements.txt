@@ -3,8 +3,6 @@ matplotlib
 numpy 
 ipykernel
 streamlit
-streamlit-aggrid
-streamlit_dynamic_filters
 seaborn
 plotly
 scikit-learn

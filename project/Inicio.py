@@ -19,7 +19,7 @@ st.write(
     ## Páginas
     1. **IMBD**: Esta página muestra recomendaciones de series y películas, basadas en análisis de datos como género, calificaciones, popularidad y más, todo basado en los dataframes de IMBD.
 
-    2. **Amazon Prime Video**: Aquí encontrarás recomendaciones exclusivas para series y películas de Amazon Prime Video, seleccionadas a partir de análisis detallados de diferentes métricas.
+    2. **Recomendaor**: Aquí encontrarás recomendaciones exclusivas para series y películas de diferentes servicios de streaming, seleccionadas a partir de análisis detallados de diferentes métricas.
 
     ## Características
     - **Interfaz Amigable**: Una interfaz intuitiva y fácil de usar que permite a los usuarios navegar entre las diferentes páginas de las plataformas de streaming.

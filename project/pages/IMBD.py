@@ -262,8 +262,6 @@ if __name__ == "__main__":
 
     release_year = extract_release_year(movies_data, pelicula_base)
     language = extract_movie_language(movies_data, pelicula_base)
-    st.write(f"pelicula: {pelicula_base}")
-    st.write(f"year: {release_year}")
     st.header("Curiosidades Relacionadas a tu Pelicula")
 
     top_year_popularity(movies_data, release_year)
@@ -273,13 +271,3 @@ if __name__ == "__main__":
     top_5_movies_by_language(movies_data, language)
 
     top_5_movies_by_language_and_rate(movies_data, language)
-
-
-
-
-
-
-
-
-
-    

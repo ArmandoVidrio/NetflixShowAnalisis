@@ -4,10 +4,13 @@ import matplotlib.colors as mcolors
 import numpy as np
 import streamlit as st
 import json
+import requests
+import os
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
-import requests
 
+# Create the path to the data folder
+data_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
 
 ### Funciones que necesitaremos
 PLACEHOLDER = "https://placekitten.com/200/300"
@@ -31,8 +34,8 @@ def aplanar_json(dataset, columna, llave):
 
 def createCleanDataset():
     # Combinamos nuestros 2 cvs
-    df_credits = pd.read_csv(r'../data/tmdb_5000_credits.csv')
-    df_movies = pd.read_csv(r'../data/tmdb_5000_movies.csv')
+    df_credits = pd.read_csv(os.path.join(data_path, 'tmdb_5000_credits.csv'))
+    df_movies = pd.read_csv(os.path.join(data_path, 'tmdb_5000_movies.csv'))
 
     # Hacemos las preparaciones para el merge
     df_movies.rename(columns={'id':'movie_id'}, inplace=True)
@@ -98,7 +101,7 @@ def obtener_peliculas_similares(dataset, movie, top_n=5):
 
     # YEAR BY TITLE
 
-     # Filter movies by year
+    # Filter movies by year
 def filter_movies_by_year(data, year):
     return data[data['release_date'].dt.year == year]
 

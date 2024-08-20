@@ -17,3 +17,5 @@ Streamlit aplication to run some analisis on netflix shows
 
 4. Install the project requirements in the virtual environment:
     `pip install -r requirements.txt`
+
+5. Create an empty folder named "saved".

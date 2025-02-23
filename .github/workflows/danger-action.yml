@@ -22,7 +22,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('Gemfile') }} # change your gemfile path
+        key: ${{ runner.os }}-gems-${{ hashFiles('Gemfile.lock') }} # change your gemfile path
         restore-keys: |
           ${{ runner.os }}-gems-
 

@@ -2,7 +2,7 @@ name: Conventional Commits
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -15,3 +15,4 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Optional, for private repositories.
           allowed-commit-types: "feat,fix" # Optional, set if you want a subset of commit types to be allowed.
+					

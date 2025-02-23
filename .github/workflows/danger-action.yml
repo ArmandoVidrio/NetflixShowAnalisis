@@ -6,7 +6,7 @@ on:
       - main
   push:
     branches:
-      - main
+      - mainpinch
 
 jobs:
   danger:
@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '2.6'
+        ruby-version: '6.0.23'
     - uses: actions/cache@v4
       with:
         path: vendor/bundle

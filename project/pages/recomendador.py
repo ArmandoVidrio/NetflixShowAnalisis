@@ -1,10 +1,14 @@
 import streamlit as st
 import pandas as pd
+import os
 import pickle
 import requests
 
 dataframes_options = ['-','Amazon', 'Disney', 'Hulu', 'Netflix']
 PLACEHOLDER = "https://placekitten.com/200/300"
+
+# We build the path to the data folder
+saved_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..', 'saved'))
 
 def fetch_img(movie):
     url = f'http://www.omdbapi.com/?apikey=1a9586fd&t={movie}'
@@ -31,8 +35,9 @@ st.header('Recomendador de series y películas')
 selected_platform = st.selectbox("Selecciona una opción de plataforma", dataframes_options)
 
 if selected_platform != dataframes_options[0]:
-    movies = pickle.load(open(f'../saved/df_{selected_platform.lower()}.pkl', 'rb'))
-    sim = pickle.load(open(f'../saved/sim_{selected_platform.lower()}.pkl', 'rb'))
+    movies = pickle.load(open(os.path.join(saved_path, f"sim_{selected_platform.lower()}.pkl"), 'rb'))
+    #sim = pickle.load(open(f'NetflixShowAnalisis/saved/sim_{selected_platform.lower()}.pkl', 'rb'))
+    st.write(movies)
     movies_list = movies['title'].values
     selected_movie = st.selectbox('Selecciona una serie o película', movies_list)
     

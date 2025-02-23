@@ -19,3 +19,6 @@ Streamlit aplication to run some analisis on netflix shows
     `pip install -r requirements.txt`
 
 5. Create an empty folder named "saved".
+
+## Commits
+All the commits should follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#specification) specification.

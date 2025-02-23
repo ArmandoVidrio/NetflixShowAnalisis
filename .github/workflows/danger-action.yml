@@ -11,22 +11,31 @@ on:
 jobs:
   danger:
     runs-on: ubuntu-latest
-    if: github.event_name  == 'push' # if only run push when multiple trigger workflow
+    if: github.event_name  == 'push' #runs only in push event
     steps:
+
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.3'
+
     - uses: actions/cache@v4
       with:
         path: vendor/bundle
         key: ${{ runner.os }}-gems-${{ hashFiles('Gemfile') }} # change your gemfile path
         restore-keys: |
           ${{ runner.os }}-gems-
-    - uses: MeilCli/danger-action@v6
+
+    - name: Install dependencies
+      run: |
+        gem install bundler
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+
+    - name: Run danger
+      uses: MeilCli/danger-action@v6
       with:
         plugins_file: 'Gemfile'
-        install_path: 'vendor/bundle'
         danger_file: 'Dangerfile'
         danger_id: 'danger-pr'
       env:
